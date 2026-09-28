@@ -4,22 +4,7 @@ import com.medifind.enums.ReservationStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * SLP: Core Platform & Shared Engine → "Implement Reservation Ledger core
- * service"
- * SLP: Patient Reservation Management → "Reserve medicine at a chosen
- * pharmacy", "Generate & display reservation confirmation code"
- *
- * Matches the requirement brief's "Reservation: id, userId, pharmacyId,
- * medicineId, quantity, confirmationCode, status" entity, plus the timing
- * fields ({@link #reservedAt}, {@link #pickupDeadline}, ...) that the
- * pickup-window / auto-expiry stories need.
- *
- * This row is intentionally decoupled from {@link Inventory}: it snapshots
- * the pharmacy and medicine at the moment of reservation rather than
- * reading live inventory each time, so a reservation's history stays
- * meaningful even if a pharmacist later edits that inventory line.
- */
+
 @Entity
 @Table(name = "reservations", indexes = {
         @Index(name = "idx_reservation_patient", columnList = "patient_id"),
@@ -48,12 +33,7 @@ public class Reservation {
     @Column(nullable = false)
     private int quantity;
 
-    /**
-     * A short, human-readable code (e.g. "MF-7K3QF2") the patient shows at
-     * the pharmacy counter to collect their reservation.
-     * SLP: Patient Reservation Management → "Generate & display reservation
-     * confirmation code"
-     */
+  
     @Column(name = "confirmation_code", nullable = false, unique = true, length = 20)
     private String confirmationCode;
 
@@ -64,11 +44,7 @@ public class Reservation {
     @Column(name = "reserved_at", nullable = false)
     private LocalDateTime reservedAt;
 
-    /**
-     * SLP: Patient Reservation Management → "Auto-expire reservations past
-     * the pickup window". Computed at creation time as
-     * reservedAt + (configurable pickup-window hours).
-     */
+   
     @Column(name = "pickup_deadline", nullable = false)
     private LocalDateTime pickupDeadline;
 

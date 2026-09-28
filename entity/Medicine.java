@@ -3,21 +3,7 @@ package com.medifind.entity;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * SLP: Core Platform & Shared Engine → "Implement shared Medicine
- * Catalogue & Category service"
- * SLP: Medicine Search & Pharmacy Discovery → "Search medicine by name,
- * generic name or brand"
- *
- * Matches the requirement brief's "Medicine: id, name, genericName, brand,
- * manufacturer, category" entity. This is the *catalogue* record — it
- * describes the medicine itself, not how much of it any one pharmacy has
- * in stock. Stock/price/availability per pharmacy lives in {@link Inventory}.
- *
- * Indexes on name/genericName/brand back the
- * "Optimise search & feed response time" story: without them, every
- * search would force MySQL to scan the whole table.
- */
+
 @Entity
 @Table(name = "medicines", indexes = {
         @Index(name = "idx_medicine_name", columnList = "name"),
@@ -42,16 +28,7 @@ public class Medicine {
     @Column(length = 150)
     private String manufacturer;
 
-    /**
-     * SLP: Pharmacy Inventory & Listing Mgmt → "Upload a photo of the
-     * medicine when adding it to the inventory"
-     *
-     * A public, web-servable path (e.g. {@code /uploads/medicines/<file>})
-     * pointing at the image a pharmacist uploaded when first adding this
-     * medicine to the shared catalogue — see FileStorageService. Null
-     * when no photo has been uploaded yet; templates fall back to a
-     * generic placeholder icon in that case.
-     */
+ 
     @Column(name = "image_url", length = 300)
     private String imageUrl;
 
@@ -59,13 +36,7 @@ public class Medicine {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    /**
-     * SLP: Admin Reporting & Configuration → "Generate platform-wide
-     * reports" ("Most searched medicines"). Incremented once per medicine
-     * each time it appears in a patient search result — see
-     * MedicineService#search. A simple running counter is enough for this
-     * report and avoids adding a whole separate search-log table.
-     */
+   
     @Column(name = "search_count", nullable = false)
     private long searchCount = 0L;
 

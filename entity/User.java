@@ -5,22 +5,7 @@ import com.medifind.enums.UserStatus;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * SLP: Core Platform & Shared Engine → "Design MySQL database schema"
- * SLP: Patient Authentication & Profile / Pharmacy Onboarding & Verification /
- *      Admin Account & Verification Mgmt (this one table backs the login of
- *      all three roles — see the {@link #role} field)
- *
- * One table serves Patients, Pharmacist staff, and Admins, distinguished by
- * {@link #role}. This mirrors the "User: id, name, email, phone, password,
- * role" entity from the requirement brief. Keeping one table (rather than
- * three near-identical ones) means authentication logic is written once and
- * reused for every role — see AuthService and CustomUserDetailsService.
- *
- * A PHARMACIST user is linked to the {@link Pharmacy} branch they work for
- * via {@link #pharmacy}, which is how "Add multiple staff logins under one
- * branch account" is supported: several User rows, same pharmacy_id.
- */
+
 @Entity
 @Table(name = "users", indexes = {
         @Index(name = "idx_user_email", columnList = "email", unique = true),
@@ -105,11 +90,7 @@ public class User {
         // Required by JPA — Hibernate builds entities via reflection.
     }
 
-    // ------------------------------------------------------------------
-    // Getters and setters. Written out explicitly (no Lombok) so the
-    // class works in any IDE with zero extra plugin setup, and so a
-    // student can see exactly what each field exposes.
-    // ------------------------------------------------------------------
+   
 
     public Long getId() {
         return id;

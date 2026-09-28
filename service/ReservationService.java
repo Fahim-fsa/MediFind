@@ -24,29 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * SLP: Core Platform & Shared Engine → "Implement Reservation Ledger
- * core service"
- * SLP: Patient Reservation Management / Pharmacy Reservation Fulfilment
- *
- * The heart of MediFind: turns "I want N units of this medicine from
- * this pharmacy" into a held reservation, and carries it through to
- * COLLECTED, CANCELLED, or EXPIRED.
- *
- * <p><b>A deliberate design decision worth calling out:</b> the
- * requirement brief's Pharmacy Dashboard prompt says stock should
- * "decrease automatically" when a reservation is marked Collected. This
- * service instead decrements stock the moment a reservation is placed
- * (see {@link #reserve}), and only restores it if the reservation is
- * later cancelled or expires (see {@link #cancel}, {@link #adminCancel},
- * {@link #expireOverdueReservations}) — collecting it does not touch
- * stock again. Decrementing at collection time only would let more
- * patients reserve the last unit than the pharmacy actually has, since
- * nothing would reflect the pending reservations in the meantime — that
- * would defeat the point of "reserving" a limited stock item. Holding
- * the stock at reservation time is what makes the reservation a real
- * guarantee.
- */
 @Service
 public class ReservationService {
 
@@ -75,11 +52,7 @@ public class ReservationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation not found: " + id));
     }
 
-    /**
-     * SLP: Patient Reservation Management → "Reserve medicine at a
-     * chosen pharmacy", "Generate & display reservation confirmation
-     * code", "Real-time listing status update to Reserved"
-     */
+
     @Transactional
     public Reservation reserve(User patient, ReservationRequest request) {
         Inventory inventory = inventoryRepository.findByPharmacyIdAndMedicineId(request.getPharmacyId(), request.getMedicineId())
@@ -132,13 +105,7 @@ public class ReservationService {
         return doCancel(reservation, "cancelled by patient");
     }
 
-    /**
-     * SLP: Pharmacy Reservation Fulfilment (pharmacist-side counterpart
-     * to "Mark reservation as Collected" — the requirement brief's
-     * Pharmacy Dashboard prompt also lists "Reject reservation" as an
-     * action here, e.g. for a stock data-entry error discovered after
-     * the fact, or a patient who cancelled by phone).
-     */
+
     @Transactional
     public Reservation pharmacistCancel(Long reservationId, Long requestingPharmacyId) {
         Reservation reservation = getById(reservationId);
@@ -198,12 +165,7 @@ public class ReservationService {
         return reservationRepository.findHistoryForPatient(patientId, status, from, to, pageable);
     }
 
-    /**
-     * SLP: Pharmacy Reservation Fulfilment → "View incoming reservations
-     * in real time", "Reservation queue in chronological order"
-     * SLP: Platform Security & Compliance → "Limit patient data exposed
-     * during reservation" — see {@link #toQueueItem}.
-     */
+
     @Transactional(readOnly = true)
     public List<ReservationQueueItem> incomingQueueForPharmacy(Long pharmacyId) {
         return reservationRepository.findByPharmacyIdAndStatusOrderByReservedAtAsc(pharmacyId, ReservationStatus.RESERVED)
@@ -215,15 +177,7 @@ public class ReservationService {
         return reservationRepository.searchForAdmin(status, pageable);
     }
 
-    /**
-     * SLP: Patient Reservation Management → "Auto-expire reservations
-     * past the pickup window"
-     *
-     * Runs on a fixed delay (see {@code medifind.reservation.expiry-check-interval-ms}
-     * in application.properties — 15 minutes by default) rather than a
-     * cron expression, which is simpler to read for a first Spring
-     * {@code @Scheduled} example.
-     */
+
     @Scheduled(fixedDelayString = "${medifind.reservation.expiry-check-interval-ms:900000}")
     @Transactional
     public void expireOverdueReservations() {

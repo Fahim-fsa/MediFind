@@ -11,46 +11,15 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
-/**
- * SLP: Platform Security & Compliance → "Role-based access control (RBAC)
- * framework", "Password hashing for all user types"
- *
- * MediFind deliberately does NOT use Spring Security's built-in
- * {@code formLogin()} filter. Instead, {@link com.medifind.service.AuthService}
- * drives login through plain {@code @Controller} methods, because the
- * Admin flow needs a pause-in-the-middle step (enter password → get
- * emailed a code → enter the code) that a one-shot formLogin POST cannot
- * express cleanly. This file only decides WHICH URLs need WHICH role, and
- * wires up the two beans (password hashing, and the AuthenticationManager
- * AuthService authenticates against) that both login paths share.
- */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    /**
-     * BCrypt is a salted, deliberately-slow hashing algorithm designed
-     * for passwords (unlike a fast general-purpose hash like SHA-256,
-     * which makes brute-forcing millions of guesses too cheap). This
-     * bean is used both to hash a new password at registration time and
-     * to verify one at login time — see AuthService.
-     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    /**
-     * Spring Boot auto-configures a {@link DaoAuthenticationProvider} from
-     * whichever {@code UserDetailsService} and {@code PasswordEncoder}
-     * beans are on the classpath (ours are {@link com.medifind.security.CustomUserDetailsService}
-     * and the bean above). Exposing the resulting {@link AuthenticationManager}
-     * as its own bean is what lets AuthService call
-     * {@code authenticationManager.authenticate(...)} directly, reusing
-     * Spring Security's own tested password-matching and account-status
-     * checks (see CustomUserDetails#isEnabled / #isAccountNonLocked)
-     * instead of re-implementing them by hand.
-     */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -70,16 +39,13 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                // We manage the session ourselves in AuthService (see establishSecurityContext),
-                // so we only need Spring Security to clear it correctly on logout.
+
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .logoutSuccessUrl("/?loggedout=true")
                         .permitAll()
                 )
-                // No formLogin(): an unauthenticated visit to a protected page is redirected
-                // straight to the right login screen instead of Spring Security's default
-                // "403 Forbidden" response, which would be a dead end for a browser user.
+
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             String target = request.getRequestURI().startsWith("/admin")
@@ -87,9 +53,7 @@ public class SecurityConfig {
                                     : "/auth/login";
                             response.sendRedirect(request.getContextPath() + target);
                         })
-                        // A logged-in user hitting a page their role doesn't allow (e.g. a
-                        // patient opening /admin/dashboard) — Boot's default error view
-                        // resolver renders templates/error/403.html for this automatically.
+
                 );
 
         return http.build();

@@ -6,20 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * SLP: Pharmacy Onboarding & Verification → "Pharmacy registration form"
- * SLP: Core Platform & Shared Engine → "Design MySQL database schema"
- *
- * Matches the requirement brief's "Pharmacy: id, pharmacyName, address,
- * licenseNumber, latitude, longitude, verifiedStatus" entity, plus a
- * {@code phone} and {@code openingHours} field the Patient Dashboard needs
- * to display ("Opening hours" in the search results table).
- *
- * A pharmacy only becomes visible in patient search results once an admin
- * moves {@link #verificationStatus} to APPROVED — see
- * PharmacyService#searchWithAvailability and the "Admin approval workflow
- * before publishing listings" story.
- */
+
 @Entity
 @Table(name = "pharmacies", indexes = {
         @Index(name = "idx_pharmacy_name", columnList = "pharmacy_name"),
@@ -49,13 +36,7 @@ public class Pharmacy {
     @Column(nullable = false, length = 30)
     private String phone;
 
-    /**
-     * Kept as a simple free-text field (e.g. "9:00 AM - 10:00 PM, 7 days")
-     * rather than a structured per-weekday schedule — a deliberate
-     * simplification so the entity and its form stay easy to follow; a
-     * later iteration could normalise this into its own table if the
-     * project needs per-day hours.
-     */
+
     @Column(name = "opening_hours", length = 150)
     private String openingHours;
 

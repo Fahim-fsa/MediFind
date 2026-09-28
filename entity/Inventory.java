@@ -5,27 +5,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/**
- * SLP: Core Platform & Shared Engine → "Implement Multi-Pharmacy Inventory
- * Index service"
- * SLP: Pharmacy Inventory & Listing Mgmt → "Add medicine listing",
- * "Update stock quantity, price and availability", "Timestamp every stock
- * update"
- *
- * The join between one {@link Pharmacy} and one {@link Medicine}: how many
- * units that specific branch has, at what price, and whether it is
- * currently listed as available. One (pharmacy, medicine) pair should only
- * ever have a single Inventory row — enforced by the unique constraint
- * below — which is what "Add medicine listing" checks before inserting a
- * new row vs. updating the existing one.
- *
- * {@link #version} is a JPA optimistic-locking column: whenever two
- * requests try to update the same inventory row at the same time (e.g. a
- * pharmacist edits stock while a reservation is being placed), Hibernate
- * detects the conflict and rejects the second write instead of silently
- * losing one of the changes. This directly satisfies the "Prevent
- * duplicate/incorrect stock updates" story.
- */
+
 @Entity
 @Table(name = "inventory",
         indexes = {

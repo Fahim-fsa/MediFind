@@ -23,20 +23,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/**
- * SLP: Pharmacy Onboarding & Verification / Admin Account & Verification
- * Mgmt / Admin Oversight & Complaint Handling / Admin Reporting &
- * Configuration / Platform Security & Compliance (audit logging)
- *
- * Every screen under {@code /admin/**} — restricted to ROLE_ADMIN by
- * SecurityConfig, and only reachable at all after the two-step sign-in
- * in {@link AuthController} (password, then emailed code). Deliberately
- * one controller for every admin screen rather than one per sub-area:
- * the Admin Dashboard is a single cohesive tool in the requirement
- * brief, and every action here already funnels through
- * {@link AuditLogService} for its paper trail, so keeping them together
- * makes that shared thread easy to see.
- */
 @Controller
 @RequestMapping("/admin")
 public class AdminController {

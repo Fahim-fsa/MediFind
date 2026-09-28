@@ -17,21 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * SLP: Core Platform & Shared Engine → "Set up 3-tier project skeleton"
- *
- * Runs once, automatically, the first time the app starts against an
- * empty database — it exists purely so a CSE student (or the course
- * instructor grading the project) can run the app and immediately see a
- * working demo instead of an empty shell with no admin account to even
- * log in with. Every check below ({@code if (repo.count() == 0)}) makes
- * this safe to leave in: on every later restart, since the tables are no
- * longer empty, nothing is re-inserted.
- *
- * Login credentials for everything seeded here are also printed to the
- * console on startup (see the end of {@link #run}) and listed in the
- * README, so nothing here needs to be memorised.
- */
 @Component
 public class DataSeeder implements CommandLineRunner {
 
